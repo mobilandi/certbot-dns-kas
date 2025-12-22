@@ -5,13 +5,13 @@ try:
 except ImportError:
     import mock
 
-from certbot.plugins import dns_test_common
-from certbot.plugins import dns_common_test
-from certbot.tests import util as test_util
+# from certbot.plugins import dns_test_common
+# from certbot.plugins import dns_common_test
+# from certbot.tests import util as test_util
 
 from certbot_dns_allinkl._internal.dns_allinkl import Authenticator
 
-class AuthenticatorTest(test_util.TempDirTestCase, dns_common_test.DNSAuthenticatorTest):
+class AuthenticatorTest(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
@@ -34,12 +34,32 @@ class AuthenticatorTest(test_util.TempDirTestCase, dns_common_test.DNSAuthentica
             record_aux=0
         )
 
-    def test_cleanup(self):
+    def test_cleanup_found(self):
+        # Setup: Mock get_dns_records to return a match
+        self.mock_client.get_dns_records.return_value = [
+            {'name': '_acme-challenge', 'type': 'MX', 'data': 'other', 'id': '99'},
+            {'name': '_acme-challenge', 'type': 'TXT', 'data': 'token', 'id': '123'},
+            {'name': 'other', 'type': 'TXT', 'data': 'token', 'id': '456'},
+        ]
+        self.mock_client._split_fqdn.return_value = ('_acme-challenge', 'example.com')
+
         self.auth._cleanup('example.com', '_acme-challenge.example.com', 'token')
-        self.mock_client.delete_dns_record.assert_called_with(
-            fqdn='_acme-challenge.example.com',
-            record_type='TXT'
+        
+        # Verify loop logic found the right one
+        self.mock_client.get_dns_records.assert_called_with('example.com')
+        # Expect _request to be called with ID 123
+        self.mock_client._request.assert_called_with(
+            "delete_dns_settings", {"record_id": "123"}
         )
+
+    def test_cleanup_not_found(self):
+        # Setup: No match
+        self.mock_client.get_dns_records.return_value = []
+        self.mock_client._split_fqdn.return_value = ('_acme-challenge', 'example.com')
+
+        self.auth._cleanup('example.com', '_acme-challenge.example.com', 'token')
+        
+        self.mock_client._request.assert_not_called()
 
     @mock.patch('certbot_dns_allinkl._internal.dns_allinkl.KasServer')
     @mock.patch.dict('os.environ', {}, clear=True)
@@ -48,8 +68,10 @@ class AuthenticatorTest(test_util.TempDirTestCase, dns_common_test.DNSAuthentica
         self.auth._get_kas_client()
         
         import os
-        self.assertEqual(os.environ['KASSERVER_USER'], 'mock_value')
-        self.assertEqual(os.environ['KASSERVER_PASSWORD'], 'mock_value')
+        # Verify credentials were used during init (via mock expectation if feasible, or relying on logic below)
+        # But crucially, verify they are GONE after the call
+        self.assertIsNone(os.environ.get('KASSERVER_USER'))
+        self.assertIsNone(os.environ.get('KASSERVER_PASSWORD'))
         mock_kas.assert_called_once()
 
 

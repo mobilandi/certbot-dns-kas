@@ -22,7 +22,7 @@ class Authenticator(dns_common.DNSAuthenticator):
     """DNS Authenticator for All-Inkl."""
 
     description = 'Obtain certificates using a DNS TXT record with All-Inkl.'
-    ttl = 60
+    # ttl = 60  # Library 'kasserver' does not support setting TTL via add_dns_record
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -54,13 +54,35 @@ class Authenticator(dns_common.DNSAuthenticator):
         )
 
     def _cleanup(self, domain: str, validation_name: str, validation: str) -> None:
-        # WARNING: delete_dns_record signature is (fqdn, record_type).
-        # This implies it might delete ALL TXT records for this FQDN.
+        client = self._get_kas_client()
+        _, zone_name = client._split_fqdn(validation_name)
+        
         try:
-            self._get_kas_client().delete_dns_record(
-                fqdn=validation_name,
-                record_type='TXT'
-            )
+            # Safe Cleanup: Find the specific record ID matching the validation token
+            records = client.get_dns_records(zone_name)
+            record_id = None
+            
+            # The API returns 'prefix' for record_name, e.g. '_acme-challenge' for '_acme-challenge.example.com'
+            # We must match both name and content to be sure.
+            target_name = validation_name.removesuffix(f".{zone_name}")
+            if target_name.endswith('.'):
+                target_name = target_name[:-1]
+
+            for item in records:
+                if (item.get('name') == target_name and 
+                    item.get('type') == 'TXT' and 
+                    item.get('data') == validation):
+                    record_id = item.get('id')
+                    break
+            
+            if record_id:
+                logger.info(f"Deleting TXT record for {validation_name} (ID: {record_id})")
+                # accessing protected method _request to delete by ID, because
+                # public delete_dns_record() is unsafe (deletes first match)
+                client._request("delete_dns_settings", {"record_id": record_id})
+            else:
+                logger.warning(f"Could not find TXT record for {validation_name} to delete.")
+
         except Exception as e:
             logger.warning('Failed to delete DNS record: %s', e)
 
@@ -70,9 +92,23 @@ class Authenticator(dns_common.DNSAuthenticator):
             if KasServer is None:
                 raise errors.PluginError("kasserver library is not installed.")
             
-            # kasserver uses environment variables for configuration
-            os.environ['KASSERVER_USER'] = self.credentials.conf('kas_user')
-            os.environ['KASSERVER_PASSWORD'] = self.credentials.conf('kas_password')
+            # kasserver uses environment variables for configuration.
+            # We set them temporarily for instantiation and clear them immediately
+            # to minimize side effects / leakage.
+            env_user = self.credentials.conf('kas_user')
+            env_pass = self.credentials.conf('kas_password')
             
-            self._kas_client = KasServer()
+            os.environ['KASSERVER_USER'] = env_user
+            os.environ['KASSERVER_PASSWORD'] = env_pass
+            
+            try:
+                self._kas_client = KasServer()
+            finally:
+                # Cleanup environment variables
+                # We use pop with default None to avoid errors if they were already missing
+                if os.environ.get('KASSERVER_USER') == env_user:
+                     os.environ.pop('KASSERVER_USER', None)
+                if os.environ.get('KASSERVER_PASSWORD') == env_pass:
+                     os.environ.pop('KASSERVER_PASSWORD', None)
+
         return self._kas_client

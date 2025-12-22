@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='certbot-dns-allinkl',
-    version='0.1.0',
+    version='0.1.1',
     description='All-Inkl DNS Authenticator plugin for Certbot',
     url='https://github.com/yourusername/certbot-dns-allinkl',
     author='Antigravity',
