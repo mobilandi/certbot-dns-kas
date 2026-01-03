@@ -2,10 +2,10 @@ from setuptools import setup
 from setuptools import find_packages
 
 setup(
-    name='certbot-dns-allinkl',
+    name='certbot-dns-kas',
     version='0.1.1',
-    description='All-Inkl DNS Authenticator plugin for Certbot',
-    url='https://github.com/yourusername/certbot-dns-allinkl',
+    description='All-Inkl KAS DNS Authenticator plugin for Certbot',
+    url='https://github.com/mobilandi/certbot-dns-kas',
     author='Antigravity',
     author_email='antigravity@example.com',
     license='Apache License 2.0',
@@ -39,7 +39,7 @@ setup(
     ],
     entry_points={
         'certbot.plugins': [
-            'dns-allinkl = certbot_dns_allinkl._internal.dns_allinkl:Authenticator',
+            'dns-kas = certbot_dns_kas._internal.dns_kas:Authenticator',
         ],
     },
 )

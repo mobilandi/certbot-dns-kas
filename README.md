@@ -1,4 +1,4 @@
-# Certbot DNS All-Inkl Plugin
+# Certbot DNS All-Inkl (KAS) Plugin
 
 This is a Certbot plugin for the **All-Inkl** DNS service (KAS).  
 It automates the process of completing `dns-01` challenges by creating and removing TXT records via the KAS API.
@@ -8,27 +8,29 @@ It automates the process of completing `dns-01` challenges by creating and remov
 ## Installation
 
 ### Via Pip (PyPI)
-*Coming soon...*
+```bash
+pip install certbot-dns-kas
+```
 
 ### From Source
 ```bash
-pip install git+https://github.com/mobilandi/certbot-dns-allinkl.git
+pip install git+https://github.com/mobilandi/certbot-dns-kas.git
 ```
 
 ## Usage
 
 1. **Create a credentials file** (e.g., `credentials.ini`):
    ```ini
-   dns_allinkl_kas_user = your_kas_login
-   dns_allinkl_kas_password = your_kas_password
+   dns_kas_user = your_kas_login
+   dns_kas_password = your_kas_password
    ```
    *(Ensure this file is only readable by root/owner: `chmod 600 credentials.ini`)*
 
 2. **Run Certbot:**
    ```bash
    certbot certonly \
-     --authenticator dns-allinkl \
-     --dns-allinkl-credentials credentials.ini \
+     --authenticator dns-kas \
+     --dns-kas-credentials credentials.ini \
      -d example.com -d *.example.com
    ```
 
@@ -38,18 +40,18 @@ To use this plugin with [Nginx Proxy Manager](https://nginxproxymanager.com/), y
 
 1. **Enter the container and install:**
    ```bash
-   docker exec -it nginx-proxy-manager sh -c "export SETUPTOOLS_USE_DISTUTILS=stdlib && pip install git+https://github.com/mobilandi/certbot-dns-allinkl.git"
+   docker exec -it nginx-proxy-manager sh -c "export SETUPTOOLS_USE_DISTUTILS=stdlib && pip install git+https://github.com/mobilandi/certbot-dns-kas.git"
    ```
 
 2. **Configure `dns-plugins.json`** (usually in `/app/certbot/dns-plugins.json`):
    ```json
-   "allinkl": {
-     "name": "All-Inkl",
-     "package_name": "certbot-dns-allinkl",
+   "kas": {
+     "name": "All-Inkl (KAS)",
+     "package_name": "certbot-dns-kas",
      "version": "==0.1.1",
      "dependencies": "kasserver",
-     "credentials": "dns_allinkl_kas_user = your_kas_user\ndns_allinkl_kas_password = your_kas_password",
-     "full_plugin_name": "dns-allinkl"
+     "credentials": "dns_kas_user = your_kas_user\ndns_kas_password = your_kas_password",
+     "full_plugin_name": "dns-kas"
    }
    ```
 

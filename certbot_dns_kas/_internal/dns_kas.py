@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class Authenticator(dns_common.DNSAuthenticator):
     """DNS Authenticator for All-Inkl."""
 
-    description = 'Obtain certificates using a DNS TXT record with All-Inkl.'
+    description = 'Obtain certificates using a DNS TXT record with All-Inkl (KAS).'
     # ttl = 60  # Library 'kasserver' does not support setting TTL via add_dns_record
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

@@ -9,7 +9,7 @@ except ImportError:
 # from certbot.plugins import dns_common_test
 # from certbot.tests import util as test_util
 
-from certbot_dns_allinkl._internal.dns_allinkl import Authenticator
+from certbot_dns_kas._internal.dns_kas import Authenticator
 
 class AuthenticatorTest(unittest.TestCase):
 
@@ -61,7 +61,7 @@ class AuthenticatorTest(unittest.TestCase):
         
         self.mock_client._request.assert_not_called()
 
-    @mock.patch('certbot_dns_allinkl._internal.dns_allinkl.KasServer')
+    @mock.patch('certbot_dns_kas._internal.dns_kas.KasServer')
     @mock.patch.dict('os.environ', {}, clear=True)
     def test_get_kas_client(self, mock_kas):
         self.auth._kas_client = None

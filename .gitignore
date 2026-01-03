@@ -41,3 +41,5 @@ coverage.xml
 # Local credentials
 credentials.ini
 .env
+
+verify_refactor.py
