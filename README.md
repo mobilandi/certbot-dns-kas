@@ -48,7 +48,7 @@ To use this plugin with [Nginx Proxy Manager](https://nginxproxymanager.com/), y
    "kas": {
      "name": "All-Inkl (KAS)",
      "package_name": "certbot-dns-kas",
-     "version": "==0.1.1",
+     "version": "==0.1.2",
      "dependencies": "kasserver",
      "credentials": "dns_kas_user = your_kas_user\ndns_kas_password = your_kas_password",
      "full_plugin_name": "dns-kas"

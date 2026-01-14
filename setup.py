@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='certbot-dns-kas',
-    version='0.1.1',
+    version='0.1.2',
     description='All-Inkl KAS DNS Authenticator plugin for Certbot',
     url='https://github.com/mobilandi/certbot-dns-kas',
     author='Antigravity',

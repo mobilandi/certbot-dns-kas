@@ -38,8 +38,8 @@ class Authenticator(dns_common.DNSAuthenticator):
             'credentials',
             'All-Inkl credentials INI file',
             {
-                'kas_user': 'KAS username/login',
-                'kas_password': 'KAS password',
+                'user': 'KAS username/login',
+                'password': 'KAS password',
             }
         )
 
@@ -95,8 +95,8 @@ class Authenticator(dns_common.DNSAuthenticator):
             # kasserver uses environment variables for configuration.
             # We set them temporarily for instantiation and clear them immediately
             # to minimize side effects / leakage.
-            env_user = self.credentials.conf('kas_user')
-            env_pass = self.credentials.conf('kas_password')
+            env_user = self.credentials.conf('user')
+            env_pass = self.credentials.conf('password')
             
             os.environ['KASSERVER_USER'] = env_user
             os.environ['KASSERVER_PASSWORD'] = env_pass
